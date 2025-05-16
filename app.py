@@ -314,7 +314,7 @@ if model_type == "Coach Input":
                             switch_schedule, rider_colors, v_SS
                         )
                         st.pyplot(fig3)
-                        st.close(fig3)
+                        plt.close(fig3)
                         fig4 = velocity_profile(v_acc, v_SS, t_final, dt=0.05)
                         st.pyplot(fig4)
                         plt.close(fig4)
