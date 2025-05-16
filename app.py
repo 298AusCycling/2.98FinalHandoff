@@ -300,19 +300,24 @@ if model_type == "Coach Input":
                         st.subheader("Plots")
                         fig1 = bar_chart(rider_data, start_order, W_rem, rider_colors)
                         st.pyplot(fig1)
+                        plt.close(fig1)
                         fig2 = plot_power_table(
                             ss_powers, start_order, 50, slope, t_half_lap, P_const,
                             switch_schedule, rider_colors, power_profile_acc,
                             W_rem_acc, rider_data, ss_energies, num_to_name
                         )
+            
                         st.pyplot(fig2)
+                        plt.close(fig2)
                         fig3 = plot_power_profile_over_half_laps(
                             ss_powers, rider_data, start_order, 50, slope, t_half_lap, P_const,
                             switch_schedule, rider_colors, v_SS
                         )
                         st.pyplot(fig3)
+                        st.close(fig3)
                         fig4 = velocity_profile(v_acc, v_SS, t_final, dt=0.05)
                         st.pyplot(fig4)
+                        plt.close(fig4)
                         
                     st.subheader("W′ Remaining per Rider:")
                     for r in start_order:
@@ -384,9 +389,14 @@ if model_type == "Coach Input":
                     delete = st.button(f"Delete Simulation #{row['id']}", key=f"delete_{row['id']}")
                     try:
                         st.pyplot(fig1)
+                        plt.close(fig1)
                         st.pyplot(fig2)
+                        plt.close(fig2)
                         st.pyplot(fig3)
+                        plt.close(fig3)
                         st.pyplot(fig4)
+                        plt.close(fig4)
+                        
                     except Exception as e:
                         st.warning("Couldn't render plots for this entry.")
                     if delete:
