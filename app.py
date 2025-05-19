@@ -9,6 +9,7 @@ from final_forward import combined, accel_phase, race_energy
 import matplotlib
 matplotlib.use("Agg")
 import requests
+import io, base64
 
 st.set_page_config(layout="wide")
 main_title = st.title("Team Pursuit Race Simulator")
@@ -18,6 +19,17 @@ if "opt_polling" not in st.session_state:
     st.session_state.opt_polling = False
 
 # --- Setup database ---
+def fig_to_png_bytes(fig) -> bytes:
+    """Return a Matplotlib figure as raw PNG bytes."""
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", bbox_inches="tight")
+    plt.close(fig)           # free VRAM
+    return buf.getvalue()
+
+def png_bytes_to_base64(b: bytes) -> str:
+    """Encode raw PNG bytes for storage / JSON."""
+    return base64.b64encode(b).decode("ascii")
+
 conn = sqlite3.connect("simulations.db", check_same_thread=False)
 cursor = conn.cursor()
 
@@ -60,8 +72,9 @@ def save_simulation_to_db(record):
         INSERT INTO simulations (
             timestamp, chosen_athletes, start_order, switch_schedule,
             peel_location, final_order, final_time, final_distance,
-            final_half_lap_count, W_rem
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            final_half_lap_count, W_rem,
+            fig1_png, fig2_png, fig3_png, fig4_png        -- NEW
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         datetime.fromtimestamp(record["timestamp"]).isoformat(),
         json.dumps(record["chosen_athletes"]),
@@ -73,6 +86,8 @@ def save_simulation_to_db(record):
         record["final_distance"],
         record["final_half_lap_count"],
         json.dumps(record["W_rem"]),
+        record["fig1_png"], record["fig2_png"],
+        record["fig3_png"], record["fig4_png"],         # NEW
     ))
     conn.commit()
 
@@ -299,45 +314,49 @@ if model_type == "Coach Input":
                         }
                         st.subheader("Plots")
                         fig1 = bar_chart(rider_data, start_order, W_rem, rider_colors)
-                        st.pyplot(fig1)
-                        plt.close(fig1)
+                        st.pyplot(fig1)              
+                        fig1_png = fig_to_png_bytes(fig1)  
+
                         fig2 = plot_power_table(
                             ss_powers, start_order, 50, slope, t_half_lap, P_const,
                             switch_schedule, rider_colors, power_profile_acc,
                             W_rem_acc, rider_data, ss_energies, num_to_name
                         )
-            
-                        st.pyplot(fig2)
-                        plt.close(fig2)
+                        st.pyplot(fig2)              
+                        fig2_png = fig_to_png_bytes(fig2)   
+
                         fig3 = plot_power_profile_over_half_laps(
                             ss_powers, rider_data, start_order, 50, slope, t_half_lap, P_const,
                             switch_schedule, rider_colors, v_SS
                         )
-                        st.pyplot(fig3)
-                        plt.close(fig3)
+                        st.pyplot(fig3)              
+                        fig3_png = fig_to_png_bytes(fig3)   
+
                         fig4 = velocity_profile(v_acc, v_SS, t_final, dt=0.05)
-                        st.pyplot(fig4)
-                        plt.close(fig4)
+                        st.pyplot(fig4)              
+                        fig4_png = fig_to_png_bytes(fig4) 
                         
                     st.subheader("W′ Remaining per Rider:")
                     for r in start_order:
                         st.write(f"**Rider {r-1}**: {W_rem[r-1]:.1f} J")
 
-                    simulation_record = {
-                        "timestamp": time.time(),
-                        "chosen_athletes": chosen_athletes,
-                        "start_order": start_order,
-                        "switch_schedule": switch_schedule,
-                        "peel_location": peel_location,
-                        "final_order": final_order,  # You can update this if needed
-                        "final_time": t_final,
-                        "final_distance": None,
-                        "final_half_lap_count": None,
-                        "W_rem": W_rem,
+                        simulation_record = {
+                            "timestamp": time.time(),
+                            "chosen_athletes": chosen_athletes,
+                            "start_order": start_order,
+                            "switch_schedule": switch_schedule,
+                            "peel_location": peel_location,
+                            "final_order": final_order,  # You can update this if needed
+                            "final_time": t_final,
+                            "final_distance": None,
+                            "final_half_lap_count": None,
+                            "W_rem": W_rem,
+                        "fig1_png": fig1_png,
+                        "fig2_png": fig2_png,
+                        "fig3_png": fig3_png,
+                        "fig4_png": fig4_png,
                     }
                     save_simulation_to_db(simulation_record)
-        else:
-            st.info("Please upload a dataset first.")
 
     # --- Tab 4: Previous Simulations ---
     with tab4:
@@ -347,21 +366,25 @@ if model_type == "Coach Input":
 
         if all_rows:
             df_download = pd.DataFrame([
-                {
-                    "id": row[0],
-                    "timestamp": row[1],
-                    "chosen_athletes": json.loads(row[2]),
-                    "start_order": json.loads(row[3]),
-                    "switch_schedule": json.loads(row[4]),
-                    "peel_location": row[5],
-                    "final_order": json.loads(row[6]),
-                    "final_time": row[7],
-                    "final_distance": row[8],
-                    "final_half_lap_count": row[9],
-                    "W_rem": json.loads(row[10]),
-                }
-                for row in all_rows
-            ])
+            {
+                "id": row[0],
+                "timestamp": row[1],
+                "chosen_athletes": json.loads(row[2]),
+                "start_order": json.loads(row[3]),
+                "switch_schedule": json.loads(row[4]),
+                "peel_location": row[5],
+                "final_order": json.loads(row[6]),
+                "final_time": row[7],
+                "final_distance": row[8],
+                "final_half_lap_count": row[9],
+                "W_rem": json.loads(row[10]),
+                "fig1_png": row[11],          # NEW
+                "fig2_png": row[12],          # NEW
+                "fig3_png": row[13],          # NEW
+                "fig4_png": row[14],          # NEW
+            }
+            for row in all_rows
+        ])
 
             st.download_button(
                 label="Download Simulations as CSV",
@@ -387,18 +410,22 @@ if model_type == "Coach Input":
                     except Exception as e:
                         st.warning("Couldn't render strategy timeline for this entry.")
                     delete = st.button(f"Delete Simulation #{row['id']}", key=f"delete_{row['id']}")
-                    try:
-                        st.pyplot(fig1)
-                        plt.close(fig1)
-                        st.pyplot(fig2)
-                        plt.close(fig2)
-                        st.pyplot(fig3)
-                        plt.close(fig3)
-                        st.pyplot(fig4)
-                        plt.close(fig4)
-                        
-                    except Exception as e:
-                        st.warning("Couldn't render plots for this entry.")
+                    img1 = row.get("fig1_png")
+                    if img1:
+                        st.image(img1, caption="Remaining W′ bar")
+                    
+                    img2 = row.get("fig2_png")
+                    if img2:
+                        st.image(img2)
+
+                    img3 = row.get("fig3_png")
+                    if img3:
+                        st.image(img3)
+                    
+                    img4 = row.get("fig4_png")
+                    if img4:
+                        st.image(img4)
+
                     if delete:
                         cursor.execute("DELETE FROM simulations WHERE id = ?", (row["id"],))
                         conn.commit()
