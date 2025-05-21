@@ -306,9 +306,10 @@ if model_type == "Coach Input":
                         with row1[0]:
                             st.markdown("**Total Time**")
                             st.markdown(f"{t_final:.2f} s")
-                        # with row1[1]:
-                            # st.markdown("**Final Order**")
-                            # st.markdown(", ".join(str(rider) for rider in final_order))  
+                        with row1[1]:
+                            st.markdown("**Target Velocity**")
+                            st.markdown(f"{v_SS:.2f} m/s  \n({v_SS*3.6:.1f} km/h)")
+
                         with row1[2]:
                             st.markdown("**Turns:**")
                             switches = switch_schedule_description(switch_schedule)
