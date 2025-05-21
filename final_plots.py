@@ -414,54 +414,54 @@ def combined(acc_func, ss_func, peel, switch_schedule, drag_adv, df, rider_data,
 # %%
 #reading in data from spreadsheet
 # df = pd.read_excel('2024_Performance_Physiology_Data_Anonymised_v2.xlsx')
-df = pd.read_excel('final_data_sheet.xlsx')
+# df = pd.read_excel('final_data_sheet.xlsx')
 # Load the data
 # power_curve = pd.read_excel("2024_Performance_Physiology_Data_Anonymised_v2.xlsx", sheet_name="Power Curves")
 
-name_to_number = {}
-number_to_name = {}
-rider_data = {}
-W_rem = {}
+# name_to_number = {}
+# number_to_name = {}
+# rider_data = {}
+# W_rem = {}
 
-chosen_names = df["Name"].tolist()
-for i, name in enumerate(chosen_names, start=1):
-    name_to_number[name] = i
-    number_to_name[i] = name
+# chosen_names = df["Name"].tolist()
+# for i, name in enumerate(chosen_names, start=1):
+#     name_to_number[name] = i
+#     number_to_name[i] = name
 
-chosen_athletes = [1, 2, 3, 4]  # Example athlete numbers
+# chosen_athletes = [1, 2, 3, 4]  # Example athlete numbers
 
-for rider in chosen_athletes:
-    W_prime,  CP, AC, Pmax, m_rider = get_rider_info(rider, df, number_to_name)
-    rider_data[rider] = {
-        "W_prime": W_prime,
-        "CP": CP,
-        "AC": AC,
-        "Pmax": Pmax,
-        "m_rider": m_rider,
-    }
-    W_rem[rider] = W_prime
+# for rider in chosen_athletes:
+#     W_prime,  CP, AC, Pmax, m_rider = get_rider_info(rider, df, number_to_name)
+#     rider_data[rider] = {
+#         "W_prime": W_prime,
+#         "CP": CP,
+#         "AC": AC,
+#         "Pmax": Pmax,
+#         "m_rider": m_rider,
+#     }
+#     W_rem[rider] = W_prime
 
-drag_adv = [1, 0.58, 0.52, 0.53]
-switch_schedule = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
-switch_schedule2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
-switch_schedule3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
-switch_schedule4 = [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]
-order = [1, 2, 3, 4]
+# drag_adv = [1, 0.58, 0.52, 0.53]
+# switch_schedule = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
+# switch_schedule2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+# switch_schedule3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+# switch_schedule4 = [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]
+# order = [1, 2, 3, 4]
 
-starttime = time.time()
-print(race_energy(18, 29, switch_schedule4, rider_data, drag_adv))
-v_SS, t_final, W_rem, slope, P_const, t_half_lap = combined(accel_phase, race_energy, 29, switch_schedule4, drag_adv, df, rider_data, W_rem, P0 = 50, order = order)
-print(v_SS, t_final, W_rem, slope, P_const, t_half_lap)
-endtime = time.time()
-print(f"Time taken: {endtime - starttime:.2f} seconds")
+# starttime = time.time()
+# print(race_energy(18, 29, switch_schedule4, rider_data, drag_adv))
+# v_SS, t_final, W_rem, slope, P_const, t_half_lap = combined(accel_phase, race_energy, 29, switch_schedule4, drag_adv, df, rider_data, W_rem, P0 = 50, order = order)
+# print(v_SS, t_final, W_rem, slope, P_const, t_half_lap)
+# endtime = time.time()
+# print(f"Time taken: {endtime - starttime:.2f} seconds")
 
-# %%
-print(f"Steady State Velocity: {v_SS:.2f} m/s")
-print(f"Total time: {t_final:.2f} seconds")
-print(f"Remaining W': {W_rem}")
-print(f"Slope: {slope:.2f} W/m")
-print(f"Constant Power: {P_const:.2f} W")
-print(f"Time to reach half lap: {t_half_lap:.2f} seconds")
+# # %%
+# print(f"Steady State Velocity: {v_SS:.2f} m/s")
+# print(f"Total time: {t_final:.2f} seconds")
+# print(f"Remaining W': {W_rem}")
+# print(f"Slope: {slope:.2f} W/m")
+# print(f"Constant Power: {P_const:.2f} W")
+# print(f"Time to reach half lap: {t_half_lap:.2f} seconds")
 
 # %% [markdown]
 # here is where we change stuff for the visuals
@@ -659,62 +659,62 @@ def combined2(acc_func, ss_func, peel, switch_schedule, drag_adv, df, rider_data
 # df = pd.read_excel('2024_Performance_Physiology_Data_Anonymised_v2.xlsx')
 # # Load the data
 # power_curve = pd.read_excel("2024_Performance_Physiology_Data_Anonymised_v2.xlsx", sheet_name="Power Curves")
-df = pd.read_excel('final_data_sheet.xlsx')
+# df = pd.read_excel('final_data_sheet.xlsx')
 
-rider_data = {}
-W_rem = {}
-chosen_athletes = [1, 2, 3, 4]  # Example athlete numbers
+# rider_data = {}
+# W_rem = {}
+# chosen_athletes = [1, 2, 3, 4]  # Example athlete numbers
 
-name_to_number = {}
-number_to_name = {}
-rider_data = {}
-W_rem = {}
+# name_to_number = {}
+# number_to_name = {}
+# rider_data = {}
+# W_rem = {}
 
-chosen_names = df["Name"].tolist()
-for i, name in enumerate(chosen_names, start=1):
-    name_to_number[name] = i
-    number_to_name[i] = name
+# chosen_names = df["Name"].tolist()
+# for i, name in enumerate(chosen_names, start=1):
+#     name_to_number[name] = i
+#     number_to_name[i] = name
 
-for rider in chosen_athletes:
-    W_prime, CP, AC, Pmax, m_rider = get_rider_info(rider, df, number_to_name)
-    rider_data[rider] = {
-        "W_prime": W_prime,
-        "CP": CP,
-        "AC": AC,
-        "Pmax": Pmax,
-        "m_rider": m_rider,
-    }
-    W_rem[rider] = W_prime
+# for rider in chosen_athletes:
+#     W_prime, CP, AC, Pmax, m_rider = get_rider_info(rider, df, number_to_name)
+#     rider_data[rider] = {
+#         "W_prime": W_prime,
+#         "CP": CP,
+#         "AC": AC,
+#         "Pmax": Pmax,
+#         "m_rider": m_rider,
+#     }
+#     W_rem[rider] = W_prime
 
-drag_adv = [1, 0.58, 0.52, 0.53]
-switch_schedule = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
-switch_schedule2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
-switch_schedule3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
-switch_schedule4 = [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]
-order = [1, 2, 3, 4]
+# drag_adv = [1, 0.58, 0.52, 0.53]
+# switch_schedule = [1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0]
+# switch_schedule2 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0]
+# switch_schedule3 = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0]
+# switch_schedule4 = [0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0]
+# order = [1, 2, 3, 4]
 
-starttime = time.time()
-v_SS, t_final, W_rem, slope, P_const, t_half_lap, ss_powers, ss_energies, ss_total_energies, W_rem_acc, power_profile_acc, v_acc = combined2(accel_phase2, race_energy2, 29, switch_schedule4, drag_adv, df, rider_data, W_rem, P0 = 50, order = order)
-print(v_SS, t_final, W_rem, slope, P_const, t_half_lap)
-endtime = time.time()
-print(f"Time taken: {endtime - starttime:.2f} seconds")
+# starttime = time.time()
+# v_SS, t_final, W_rem, slope, P_const, t_half_lap, ss_powers, ss_energies, ss_total_energies, W_rem_acc, power_profile_acc, v_acc = combined2(accel_phase2, race_energy2, 29, switch_schedule4, drag_adv, df, rider_data, W_rem, P0 = 50, order = order)
+# print(v_SS, t_final, W_rem, slope, P_const, t_half_lap)
+# endtime = time.time()
+# print(f"Time taken: {endtime - starttime:.2f} seconds")
 
-# %%
-print(f"Steady State Velocity: {v_SS:.2f} m/s")
-print(f"Total time: {t_final:.2f} seconds")
-print(f"Remaining W': {W_rem}")
-print(f"Remaining W' after acceleration: {W_rem_acc}")
-print(f"Slope: {slope:.2f} W/m")
-print(f"Constant Power: {P_const:.2f} W")
-print(f"Time to reach half lap: {t_half_lap:.2f} seconds")
-print(f"Power profile: {ss_powers}")
-print(f"Power profile for rider 1: {ss_powers[1]} and length: {len(ss_powers[1])}")
-print(f"Race energy profile: {ss_energies}")
-print(f"W' profile for rider 1: {ss_energies[1]} and length: {len(ss_energies[1])}")
-print(f"Total energy profile: {ss_total_energies}")
-print(f"Total energy profile for rider 1: {ss_total_energies[1]} and length: {len(ss_total_energies[1])}")
-print(f"Power profile for acceleration: {power_profile_acc}")
-print(f"Power profile for acceleration for rider 1: {power_profile_acc[1]} and length: {len(power_profile_acc[1])}")
+# # %%
+# print(f"Steady State Velocity: {v_SS:.2f} m/s")
+# print(f"Total time: {t_final:.2f} seconds")
+# print(f"Remaining W': {W_rem}")
+# print(f"Remaining W' after acceleration: {W_rem_acc}")
+# print(f"Slope: {slope:.2f} W/m")
+# print(f"Constant Power: {P_const:.2f} W")
+# print(f"Time to reach half lap: {t_half_lap:.2f} seconds")
+# print(f"Power profile: {ss_powers}")
+# print(f"Power profile for rider 1: {ss_powers[1]} and length: {len(ss_powers[1])}")
+# print(f"Race energy profile: {ss_energies}")
+# print(f"W' profile for rider 1: {ss_energies[1]} and length: {len(ss_energies[1])}")
+# print(f"Total energy profile: {ss_total_energies}")
+# print(f"Total energy profile for rider 1: {ss_total_energies[1]} and length: {len(ss_total_energies[1])}")
+# print(f"Power profile for acceleration: {power_profile_acc}")
+# print(f"Power profile for acceleration for rider 1: {power_profile_acc[1]} and length: {len(power_profile_acc[1])}")
 
 # %%
 def bar_chart(rider_data, order, W_rem, num_to_name, rider_colors ):
@@ -962,73 +962,73 @@ def plotting(rider_data, W_rem, switch_schedule, order, v_SS, t_final, slope, P_
     
 
 # %%
-rider_colors = {
-    1: "#1f77b4",  # blue
-    2: "#ff7f0e",  # orange
-    3: "#2ca02c",  # green
-    4: "#d62728",  # red
-}
-plotting(rider_data, W_rem, switch_schedule4, order, v_SS, t_final, slope, P_const, t_half_lap, ss_powers, ss_energies, ss_total_energies, W_rem_acc, power_profile_acc, v_acc, rider_colors, number_to_name)
-
-# %% [markdown]
-# calling what comes out of the optimization
-
-# %%
-#reading in data from spreadsheet
-df = pd.read_excel('final_data_sheet.xlsx')
-# Load the data
-power_curve = pd.read_excel("final_data_sheet.xlsx", sheet_name="Power Curves")
-
-rider_data = {}
-W_rem = {}
-chosen_athletes = [1, 2, 3, 4]  # Example athlete numbers
-
-name_to_number = {}
-number_to_name = {}
-rider_data = {}
-W_rem = {}
-
-chosen_names = df["Name"].tolist()
-for i, name in enumerate(chosen_names, start=1):
-    name_to_number[name] = i
-    number_to_name[i] = name
-
-for rider in chosen_athletes:
-    W_prime, CP, AC, Pmax, m_rider = get_rider_info(rider, df, number_to_name)
-    rider_data[rider] = {
-        "W_prime": W_prime,
-        "CP": CP,
-        "AC": AC,
-        "Pmax": Pmax,
-        "m_rider": m_rider,
-    }
-    W_rem[rider] = W_prime
-
-drag_adv = [1, 0.58, 0.52, 0.53]
-
-schedule = [5, 10, 18, 24, 32]
-full_switch_schedule = [0] * 32
-for point in schedule:
-    if 0 <= point < 32:
-        full_switch_schedule[int(point)] = 1
-# switch_schedule = [0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0]
-order = [3, 4, 1, 2]
-peel_location = 24
-
-starttime = time.time()
-v_SS, t_final, W_rem, slope, P_const, t_half_lap, ss_powers, ss_energies, ss_total_energies, W_rem_acc, power_profile_acc, v_acc = combined2(accel_phase2, race_energy2, peel_location, full_switch_schedule, drag_adv, df, rider_data, W_rem, P0 = 50, order = order)
-print(v_SS, t_final, W_rem, slope, P_const, t_half_lap)
-endtime = time.time()
-print(f"Time taken: {endtime - starttime:.2f} seconds")
-
-
-# %%
 # rider_colors = {
 #     1: "#1f77b4",  # blue
 #     2: "#ff7f0e",  # orange
 #     3: "#2ca02c",  # green
 #     4: "#d62728",  # red
 # }
-# plotting(rider_data, W_rem, switch_schedule, order, v_SS, t_final, slope, P_const, t_half_lap, ss_powers, ss_energies, ss_total_energies, W_rem_acc, power_profile_acc, v_acc, rider_colors, number_to_name)
+# plotting(rider_data, W_rem, switch_schedule4, order, v_SS, t_final, slope, P_const, t_half_lap, ss_powers, ss_energies, ss_total_energies, W_rem_acc, power_profile_acc, v_acc, rider_colors, number_to_name)
+
+# %% [markdown]
+# calling what comes out of the optimization
+
+# %%
+#reading in data from spreadsheet
+# df = pd.read_excel('final_data_sheet.xlsx')
+# Load the data
+# power_curve = pd.read_excel("final_data_sheet.xlsx", sheet_name="Power Curves")
+
+# rider_data = {}
+# W_rem = {}
+# chosen_athletes = [1, 2, 3, 4]  # Example athlete numbers
+
+# name_to_number = {}
+# number_to_name = {}
+# rider_data = {}
+# W_rem = {}
+
+# chosen_names = df["Name"].tolist()
+# for i, name in enumerate(chosen_names, start=1):
+#     name_to_number[name] = i
+#     number_to_name[i] = name
+
+# for rider in chosen_athletes:
+#     W_prime, CP, AC, Pmax, m_rider = get_rider_info(rider, df, number_to_name)
+#     rider_data[rider] = {
+#         "W_prime": W_prime,
+#         "CP": CP,
+#         "AC": AC,
+#         "Pmax": Pmax,
+#         "m_rider": m_rider,
+#     }
+#     W_rem[rider] = W_prime
+
+# drag_adv = [1, 0.58, 0.52, 0.53]
+
+# schedule = [5, 10, 18, 24, 32]
+# full_switch_schedule = [0] * 32
+# for point in schedule:
+#     if 0 <= point < 32:
+#         full_switch_schedule[int(point)] = 1
+# # switch_schedule = [0, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0]
+# order = [3, 4, 1, 2]
+# peel_location = 24
+
+# starttime = time.time()
+# v_SS, t_final, W_rem, slope, P_const, t_half_lap, ss_powers, ss_energies, ss_total_energies, W_rem_acc, power_profile_acc, v_acc = combined2(accel_phase2, race_energy2, peel_location, full_switch_schedule, drag_adv, df, rider_data, W_rem, P0 = 50, order = order)
+# print(v_SS, t_final, W_rem, slope, P_const, t_half_lap)
+# endtime = time.time()
+# print(f"Time taken: {endtime - starttime:.2f} seconds")
+
+
+# # %%
+# # rider_colors = {
+# #     1: "#1f77b4",  # blue
+# #     2: "#ff7f0e",  # orange
+# #     3: "#2ca02c",  # green
+# #     4: "#d62728",  # red
+# # }
+# # plotting(rider_data, W_rem, switch_schedule, order, v_SS, t_final, slope, P_const, t_half_lap, ss_powers, ss_energies, ss_total_energies, W_rem_acc, power_profile_acc, v_acc, rider_colors, number_to_name)
 
 
