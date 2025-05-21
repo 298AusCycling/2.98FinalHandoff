@@ -4,8 +4,7 @@ import time
 import sqlite3
 import json
 from datetime import datetime
-from plots import combined2, get_rider_info, accel_phase2, race_energy2, bar_chart, plot_power_table, plot_power_profile_over_half_laps, velocity_profile
-from final_forward import combined, accel_phase, race_energy
+from final_plots import combined2, get_rider_info, accel_phase2, race_energy2, bar_chart, plot_power_table, plot_power_profile_over_half_laps, velocity_profile
 import matplotlib
 matplotlib.use("Agg")
 import requests
@@ -52,7 +51,6 @@ CREATE TABLE IF NOT EXISTS simulations (
     start_order TEXT,
     switch_schedule TEXT,
     peel_location INTEGER,
-    final_order TEXT,
     final_time REAL,
     final_distance REAL,
     final_half_lap_count INTEGER,
@@ -71,17 +69,16 @@ def save_simulation_to_db(record):
     cursor.execute("""
         INSERT INTO simulations (
             timestamp, chosen_athletes, start_order, switch_schedule,
-            peel_location, final_order, final_time, final_distance,
+            peel_location, final_time, final_distance,
             final_half_lap_count, W_rem,
             fig1_png, fig2_png, fig3_png, fig4_png        -- NEW
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (
         datetime.fromtimestamp(record["timestamp"]).isoformat(),
         json.dumps(record["chosen_athletes"]),
         json.dumps(record["start_order"]),
         json.dumps(record["switch_schedule"]),
         record["peel_location"],
-        json.dumps(record["final_order"]),
         record["final_time"],
         record["final_distance"],
         record["final_half_lap_count"],
@@ -147,7 +144,7 @@ def plot_switch_strategy(start_order, switch_schedule):
             prev_end = x + w
 
     ax.set_yticks(list(y_levels.values()))
-    ax.set_yticklabels([f"Rider {r}" for r in reversed(start_order)])
+    ax.set_yticklabels(r for r in reversed(start_order))
     ax.set_xlabel("Half-laps")
     ax.set_ylabel("Rider")
     ax.set_title("Turn Strategy")
@@ -199,13 +196,7 @@ if model_type == "Coach Input":
             with left_col:
                 df_athletes = pd.read_excel(uploaded_file, engine="openpyxl")
 
-                available_athletes = (
-                    df_athletes["Name"]
-                    .str.extract(r"M(\d+)")[0]
-                    .dropna()
-                    .astype(int)
-                    .tolist()
-                )
+                available_athletes = df_athletes["Name"].to_list()
 
                 chosen_athletes = st.multiselect("Select 4 Athletes", available_athletes)
                 st.markdown(f"Selected Riders: {sorted(chosen_athletes)}.")
@@ -246,15 +237,19 @@ if model_type == "Coach Input":
             with right_col:
                 if simulate and start_order and peel_location is not None:
                     with st.spinner("Running simulation..."):
-
                         # Load data from uploaded file
                         df_athletes = pd.read_excel(uploaded_file, engine="openpyxl")
-
-                        # Step 1: Prepare rider data and initial W'
                         rider_data = {}
                         W_rem = {}
+                        name_to_number = {}
+                        number_to_name = {}
+                        chosen_names = df_athletes["Name"].tolist()
+                        chosen_athletes = [1,2,3,4]
+                        for i, name in enumerate(chosen_names, start=1):
+                            name_to_number[name] = i
+                            number_to_name[i] = name
                         for rider in chosen_athletes:
-                            W_prime, CP, AC, Pmax, m_rider = get_rider_info(rider, df=df_athletes)
+                            W_prime, CP, AC, Pmax, m_rider = get_rider_info(rider, df_athletes, number_to_name)
                             rider_data[rider] = {
                                 "W_prime": W_prime,
                                 "CP": CP,
@@ -263,42 +258,57 @@ if model_type == "Coach Input":
                                 "m_rider": m_rider,
                             }
                             W_rem[rider] = W_prime
+                        start_order_nums = [name_to_number[name] for name in start_order]
+                        v_SS, t_final, W_rem, slope, P_const, t_half_lap, ss_powers, ss_energies, ss_total_energies, W_rem_acc, power_profile_acc, v_acc = combined2(accel_phase2, race_energy2, peel_location, switch_schedule, drag_adv, df_athletes, rider_data, W_rem, P0 = 50, order = start_order_nums)
+                            
+                        # # Step 1: Prepare rider data and initial W'
+                        # rider_data = {}
+                        # W_rem = {}
+                        # for rider in chosen_athletes:
+                        #     W_prime, CP, AC, Pmax, m_rider = get_rider_info(rider, df=df_athletes)
+                        #     rider_data[rider] = {
+                        #         "W_prime": W_prime,
+                        #         "CP": CP,
+                        #         "AC": AC,
+                        #         "Pmax": Pmax,
+                        #         "m_rider": m_rider,
+                        #     }
+                        #     W_rem[rider] = W_prime
 
-                        # Step 2: Set drafting coefficients                       
+                        # # Step 2: Set drafting coefficients                       
                         
-                        __, __, __, __, __, __, final_order = combined(
-                            accel_phase,
-                            race_energy,
-                            peel_location,
-                            switch_schedule,
-                            drag_adv,
-                            df=df_athletes,
-                            chosen_athletes=chosen_athletes,
-                            order=start_order,
-                            rho=rho_input,
-                            Crr=Crr_input,
-                            v0=v0_input
-                        )
+                        # __, __, __, __, __, __, final_order = combined(
+                        #     accel_phase,
+                        #     race_energy,
+                        #     peel_location,
+                        #     switch_schedule,
+                        #     drag_adv,
+                        #     df=df_athletes,
+                        #     chosen_athletes=chosen_athletes,
+                        #     order=start_order,
+                        #     rho=rho_input,
+                        #     Crr=Crr_input,
+                        #     v0=v0_input
+                        # )
                         
-                        v_SS, t_final, W_rem, slope, P_const, t_half_lap, ss_powers, ss_energies, ss_total_energies, W_rem_acc, power_profile_acc, v_acc = combined2(
-                            accel_phase2, race_energy2, peel_location, switch_schedule, drag_adv,
-                            df_athletes, rider_data, W_rem, P0 = p0_input, order=start_order
-                        )
+                        # v_SS, t_final, W_rem, slope, P_const, t_half_lap, ss_powers, ss_energies, ss_total_energies, W_rem_acc, power_profile_acc, v_acc = combined2(
+                        #     accel_phase2, race_energy2, peel_location, switch_schedule, drag_adv,
+                        #     df_athletes, rider_data, W_rem, P0 = p0_input, order=start_order
+                        # )
                         
                     # Step 4: Display Results
                     with st.container():
                         row1 = st.columns(3)
                         num_to_name = {}
-                        name_to_number = {}
                         for i, name in enumerate(chosen_athletes, start=1):
                             name_to_number[name] = i
                             num_to_name[i] = name
                         with row1[0]:
                             st.markdown("**Total Time**")
                             st.markdown(f"{t_final:.2f} s")
-                        with row1[1]:
-                            st.markdown("**Final Order**")
-                            st.markdown(", ".join(str(rider) for rider in final_order))  
+                        # with row1[1]:
+                            # st.markdown("**Final Order**")
+                            # st.markdown(", ".join(str(rider) for rider in final_order))  
                         with row1[2]:
                             st.markdown("**Turns:**")
                             switches = switch_schedule_description(switch_schedule)
@@ -313,12 +323,12 @@ if model_type == "Coach Input":
                             4: "#808080",  
                         }
                         st.subheader("Plots")
-                        fig1 = bar_chart(rider_data, start_order, W_rem, rider_colors)
+                        fig1 = bar_chart(rider_data, start_order_nums, W_rem, number_to_name, rider_colors)
                         st.pyplot(fig1)              
                         fig1_png = fig_to_png_bytes(fig1)  
 
                         fig2 = plot_power_table(
-                            ss_powers, start_order, 50, slope, t_half_lap, P_const,
+                            ss_powers, start_order_nums, 50, slope, t_half_lap, P_const,
                             switch_schedule, rider_colors, power_profile_acc,
                             W_rem_acc, rider_data, ss_energies, num_to_name
                         )
@@ -326,7 +336,7 @@ if model_type == "Coach Input":
                         fig2_png = fig_to_png_bytes(fig2)   
 
                         fig3 = plot_power_profile_over_half_laps(
-                            ss_powers, rider_data, start_order, 50, slope, t_half_lap, P_const,
+                            ss_powers, rider_data, start_order_nums, 50, slope, t_half_lap, P_const,
                             switch_schedule, rider_colors, v_SS
                         )
                         st.pyplot(fig3)              
@@ -337,8 +347,9 @@ if model_type == "Coach Input":
                         fig4_png = fig_to_png_bytes(fig4) 
                         
                     st.subheader("W′ Remaining per Rider:")
-                    for r in start_order:
-                        st.write(f"**Rider {r-1}**: {W_rem[r-1]:.1f} J")
+                    for name in start_order:            
+                        idx = name_to_number[name]       # 1–4
+                        st.write(f"**{name}**: {W_rem[idx-1]:.1f} J")
 
                         simulation_record = {
                             "timestamp": time.time(),
@@ -346,7 +357,6 @@ if model_type == "Coach Input":
                             "start_order": start_order,
                             "switch_schedule": switch_schedule,
                             "peel_location": peel_location,
-                            "final_order": final_order,  # You can update this if needed
                             "final_time": t_final,
                             "final_distance": None,
                             "final_half_lap_count": None,
@@ -373,7 +383,6 @@ if model_type == "Coach Input":
                 "start_order": json.loads(row[3]),
                 "switch_schedule": json.loads(row[4]),
                 "peel_location": row[5],
-                "final_order": json.loads(row[6]),
                 "final_time": row[7],
                 "final_distance": row[8],
                 "final_half_lap_count": row[9],
@@ -397,7 +406,7 @@ if model_type == "Coach Input":
                 with st.expander(f"Simulation #{row['id']} — {row['timestamp']}"):
                     st.write(f"**Chosen Athletes:** {row['chosen_athletes']}")
                     st.write(f"**Start Order:** {row['start_order']}")
-                    st.write(f"**Final Order:** {row['final_order']}")
+                    # st.write(f"**Final Order:** {row['final_order']}")
                     st.write(f"**Peel Location:** {row['peel_location']}")
                     st.write(f"**Total Time:** {row['final_time']:.2f} seconds")
                     st.write(f"**Turn Schedule:** {switch_schedule_description(row['switch_schedule'])}")
@@ -636,4 +645,3 @@ elif model_type == "Optimization":
                         conn.commit()
                         st.success(f"Simulation #{row['id']} deleted successfully.")
                         st.rerun()
-
