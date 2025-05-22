@@ -239,10 +239,8 @@ if model_type == "Coach Input":
                     with st.spinner("Running simulation..."):
                         # Load data from uploaded file
                         df_athletes = pd.read_excel(uploaded_file, engine="openpyxl")
-                        # names the coach picked in the left column
-                        chosen_athletes_names = chosen_athletes                # e.g. ["Rex", "Mia", "Kai", "Zoe"]
+                        chosen_athletes_names = chosen_athletes                
 
-                        # build the two look-up tables from that list
                         name_to_number = {name: i for i, name in enumerate(chosen_athletes_names, 1)}
                         number_to_name = {i: name for name, i in name_to_number.items()}
 
@@ -268,42 +266,6 @@ if model_type == "Coach Input":
                                 P0=50, order=start_order_nums
                         )
                             
-                        # # Step 1: Prepare rider data and initial W'
-                        # rider_data = {}
-                        # W_rem = {}
-                        # for rider in chosen_athletes:
-                        #     W_prime, CP, AC, Pmax, m_rider = get_rider_info(rider, df=df_athletes)
-                        #     rider_data[rider] = {
-                        #         "W_prime": W_prime,
-                        #         "CP": CP,
-                        #         "AC": AC,
-                        #         "Pmax": Pmax,
-                        #         "m_rider": m_rider,
-                        #     }
-                        #     W_rem[rider] = W_prime
-
-                        # # Step 2: Set drafting coefficients                       
-                        
-                        # __, __, __, __, __, __, final_order = combined(
-                        #     accel_phase,
-                        #     race_energy,
-                        #     peel_location,
-                        #     switch_schedule,
-                        #     drag_adv,
-                        #     df=df_athletes,
-                        #     chosen_athletes=chosen_athletes,
-                        #     order=start_order,
-                        #     rho=rho_input,
-                        #     Crr=Crr_input,
-                        #     v0=v0_input
-                        # )
-                        
-                        # v_SS, t_final, W_rem, slope, P_const, t_half_lap, ss_powers, ss_energies, ss_total_energies, W_rem_acc, power_profile_acc, v_acc = combined2(
-                        #     accel_phase2, race_energy2, peel_location, switch_schedule, drag_adv,
-                        #     df_athletes, rider_data, W_rem, P0 = p0_input, order=start_order
-                        # )
-                        
-                    # Step 4: Display Results
                     with st.container():
                         row1 = st.columns(3)
                         num_to_name = {}
