@@ -239,27 +239,34 @@ if model_type == "Coach Input":
                     with st.spinner("Running simulation..."):
                         # Load data from uploaded file
                         df_athletes = pd.read_excel(uploaded_file, engine="openpyxl")
+                        # names the coach picked in the left column
+                        chosen_athletes_names = chosen_athletes                # e.g. ["Rex", "Mia", "Kai", "Zoe"]
+
+                        # build the two look-up tables from that list
+                        name_to_number = {name: i for i, name in enumerate(chosen_athletes_names, 1)}
+                        number_to_name = {i: name for name, i in name_to_number.items()}
+
+                        # numeric IDs for the rest of the code
+                        chosen_athletes_nums = list(number_to_name.keys())     # [1, 2, 3, 4]
+                        start_order_nums     = [name_to_number[n] for n in start_order]
+
+                        # build rider_data and initial W′
                         rider_data = {}
-                        W_rem = {}
-                        name_to_number = {}
-                        number_to_name = {}
-                        chosen_names = df_athletes["Name"].tolist()
-                        chosen_athletes = [1,2,3,4]
-                        for i, name in enumerate(chosen_names, start=1):
-                            name_to_number[name] = i
-                            number_to_name[i] = name
-                        for rider in chosen_athletes:
-                            W_prime, CP, AC, Pmax, m_rider = get_rider_info(rider, df_athletes, number_to_name)
-                            rider_data[rider] = {
-                                "W_prime": W_prime,
-                                "CP": CP,
-                                "AC": AC,
-                                "Pmax": Pmax,
-                                "m_rider": m_rider,
-                            }
-                            W_rem[rider] = W_prime
-                        start_order_nums = [name_to_number[name] for name in start_order]
-                        v_SS, t_final, W_rem, slope, P_const, t_half_lap, ss_powers, ss_energies, ss_total_energies, W_rem_acc, power_profile_acc, v_acc = combined2(accel_phase2, race_energy2, peel_location, switch_schedule, drag_adv, df_athletes, rider_data, W_rem, P0 = 50, order = start_order_nums)
+                        W_rem      = {}
+                        for r in chosen_athletes_nums:                         # r = 1,2,3,4
+                            Wp, CP, AC, Pmax, m = get_rider_info(r, df_athletes, number_to_name)
+                            rider_data[r] = {"W_prime": Wp, "CP": CP, "AC": AC, "Pmax": Pmax, "m_rider": m}
+                            W_rem[r]      = Wp
+
+                        # run the simulation
+                        v_SS, t_final, W_rem, slope, P_const, t_half_lap, \
+                        ss_powers, ss_energies, ss_total_energies, \
+                        W_rem_acc, power_profile_acc, v_acc = combined2(
+                                accel_phase2, race_energy2, peel_location,
+                                switch_schedule, drag_adv,
+                                df_athletes, rider_data, W_rem,
+                                P0=50, order=start_order_nums
+                        )
                             
                         # # Step 1: Prepare rider data and initial W'
                         # rider_data = {}
